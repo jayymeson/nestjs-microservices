@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.10-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 15672:15672
+      - 5672:5672
+    volumes:
+      - ./.docker/rabbitmq/.rabbitmq_data:/var/lib/rabbitmq/mnesia
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+
+  microservice-1:
+    container_name: microservice-1
+    build:
+      context: "./microservice-1"
+      dockerfile: Dockerfile
+    command: npm run start:dev
+    depends_on:
+      - rabbitmq
+    ports:
+      - 3000:3000
+    volumes:
+      - ./microservice-1:/usr/src/app
+      - /usr/src/app/node_modules
+
+  microservice-2:
+    container_name: microservice-2
+    build:
+      context: "./microservice-2"
+      dockerfile: Dockerfile
+    command: npm run start:dev
+    depends_on:
+      - rabbitmq
+    ports:
+      - 3001:3001
+    volumes:
+      - ./microservice-2:/usr/src/app
+      - /usr/src/app/node_modules
